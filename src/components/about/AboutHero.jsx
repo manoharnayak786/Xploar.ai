@@ -8,10 +8,10 @@ const Interactive3DVisual = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [time, setTime] = useState(0);
 
-  // Continuous animation loop
+  // Continuous animation loop (50% speed)
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(prev => prev + 0.02);
+      setTime(prev => prev + 0.01); // Reduced from 0.02 to 0.01 (50% speed)
     }, 16); // ~60fps
 
     return () => clearInterval(interval);
@@ -55,8 +55,8 @@ const Interactive3DVisual = () => {
       <div 
         className="absolute inset-0 bg-gradient-to-br from-electric-aqua/20 via-transparent to-neon-lilac/20 rounded-3xl blur-3xl scale-110"
         style={{
-          opacity: 0.4 + Math.sin(time * 1.2) * 0.3,
-          transform: `scale(${1.1 + Math.sin(time * 0.8) * 0.05})`,
+          opacity: 0.4 + Math.sin(time * 0.6) * 0.15,
+          transform: `scale(${1.1 + Math.sin(time * 0.4) * 0.025})`,
         }}
       ></div>
       
@@ -64,7 +64,7 @@ const Interactive3DVisual = () => {
       <div
         className="relative w-full max-w-lg h-[500px] transition-all duration-500 ease-out"
         style={{
-          transform: `rotateX(${rotation.x + Math.sin(time) * 5}deg) rotateY(${rotation.y + Math.cos(time * 0.8) * 5}deg) translateZ(0)`,
+          transform: `rotateX(${rotation.x + Math.sin(time) * 2.5}deg) rotateY(${rotation.y + Math.cos(time * 0.8) * 2.5}deg) translateZ(0)`,
         }}
       >
         {/* Floating Elements */}
@@ -73,7 +73,7 @@ const Interactive3DVisual = () => {
           <div 
             className="absolute top-8 left-8 w-16 h-16 bg-gradient-to-br from-electric-aqua to-electric-aqua/60 rounded-2xl flex items-center justify-center transition-all duration-700"
             style={{
-              transform: `translate(${Math.sin(time * 1.2) * 8}px, ${Math.cos(time * 1.5) * 6}px) rotate(${time * 20}deg) scale(${1 + Math.sin(time * 2) * 0.1})`,
+              transform: `translate(${Math.sin(time * 0.6) * 4}px, ${Math.cos(time * 0.75) * 3}px) rotate(${time * 10}deg) scale(${1 + Math.sin(time * 1) * 0.05})`,
             }}
           >
             <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,7 @@ const Interactive3DVisual = () => {
           <div 
             className="absolute top-16 right-12 w-12 h-12 bg-gradient-to-br from-neon-lilac to-neon-lilac/60 rounded-xl flex items-center justify-center transition-all duration-700"
             style={{
-              transform: `translate(${Math.cos(time * 1.8) * 10}px, ${Math.sin(time * 1.3) * 8}px) rotate(${-time * 25}deg) scale(${1 + Math.cos(time * 2.5) * 0.15})`,
+              transform: `translate(${Math.cos(time * 0.9) * 5}px, ${Math.sin(time * 0.65) * 4}px) rotate(${-time * 12.5}deg) scale(${1 + Math.cos(time * 1.25) * 0.075})`,
             }}
           >
             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -95,7 +95,7 @@ const Interactive3DVisual = () => {
           <div 
             className="absolute bottom-20 left-12 w-14 h-14 bg-gradient-to-br from-electric-aqua/80 to-neon-lilac/80 rounded-2xl flex items-center justify-center transition-all duration-700"
             style={{
-              transform: `translate(${Math.sin(time * 1.6) * 12}px, ${Math.cos(time * 1.4) * 10}px) rotate(${time * 30}deg) scale(${1 + Math.sin(time * 3) * 0.12})`,
+              transform: `translate(${Math.sin(time * 0.8) * 6}px, ${Math.cos(time * 0.7) * 5}px) rotate(${time * 15}deg) scale(${1 + Math.sin(time * 1.5) * 0.06})`,
             }}
           >
             <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ const Interactive3DVisual = () => {
           <div 
             className="absolute bottom-8 right-8 w-10 h-10 bg-gradient-to-br from-neon-lilac/80 to-electric-aqua/80 rounded-xl flex items-center justify-center transition-all duration-700"
             style={{
-              transform: `translate(${Math.cos(time * 2.1) * 8}px, ${Math.sin(time * 1.7) * 6}px) rotate(${-time * 35}deg) scale(${1 + Math.cos(time * 2.8) * 0.1})`,
+              transform: `translate(${Math.cos(time * 1.05) * 4}px, ${Math.sin(time * 0.85) * 3}px) rotate(${-time * 17.5}deg) scale(${1 + Math.cos(time * 1.4) * 0.05})`,
             }}
           >
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -120,29 +120,29 @@ const Interactive3DVisual = () => {
           <div 
             className="relative w-80 h-80 transition-all duration-700"
             style={{
-              transform: `scale(${1 + Math.sin(time * 1.5) * 0.05})`,
+              transform: `scale(${1 + Math.sin(time * 0.75) * 0.025})`,
             }}
           >
             {/* Central Brain/AI Visual with Pulsing Effect */}
             <div 
               className="absolute inset-0 bg-gradient-to-br from-electric-aqua/20 via-neon-lilac/20 to-electric-aqua/20 rounded-full blur-sm"
               style={{
-                transform: `scale(${1 + Math.sin(time * 2) * 0.1})`,
-                opacity: 0.6 + Math.sin(time * 1.5) * 0.2,
+                transform: `scale(${1 + Math.sin(time * 1) * 0.05})`,
+                opacity: 0.6 + Math.sin(time * 0.75) * 0.1,
               }}
             ></div>
             <div 
               className="absolute inset-4 bg-gradient-to-br from-electric-aqua/30 via-neon-lilac/30 to-electric-aqua/30 rounded-full blur-sm"
               style={{
-                transform: `scale(${1 + Math.cos(time * 2.2) * 0.08})`,
-                opacity: 0.7 + Math.cos(time * 1.8) * 0.15,
+                transform: `scale(${1 + Math.cos(time * 1.1) * 0.04})`,
+                opacity: 0.7 + Math.cos(time * 0.9) * 0.075,
               }}
             ></div>
             <div 
               className="absolute inset-8 bg-gradient-to-br from-electric-aqua/40 via-neon-lilac/40 to-electric-aqua/40 rounded-full blur-sm"
               style={{
-                transform: `scale(${1 + Math.sin(time * 2.8) * 0.06})`,
-                opacity: 0.8 + Math.sin(time * 2.1) * 0.1,
+                transform: `scale(${1 + Math.sin(time * 1.4) * 0.03})`,
+                opacity: 0.8 + Math.sin(time * 1.05) * 0.05,
               }}
             ></div>
             
@@ -150,13 +150,13 @@ const Interactive3DVisual = () => {
             <div 
               className="absolute inset-16 bg-gradient-to-br from-white/90 via-electric-aqua/90 to-neon-lilac/90 rounded-full flex items-center justify-center shadow-2xl"
               style={{
-                transform: `rotate(${time * 30}deg) scale(${1 + Math.sin(time * 3) * 0.03})`,
+                transform: `rotate(${time * 15}deg) scale(${1 + Math.sin(time * 1.5) * 0.015})`,
               }}
             >
               <div 
                 className="w-24 h-24 bg-gradient-to-br from-electric-aqua to-neon-lilac rounded-full flex items-center justify-center"
                 style={{
-                  transform: `rotate(${-time * 45}deg)`,
+                  transform: `rotate(${-time * 22.5}deg)`,
                 }}
               >
                 <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -169,25 +169,25 @@ const Interactive3DVisual = () => {
             <div 
               className="absolute top-4 left-1/2 w-6 h-6 bg-electric-aqua rounded-full"
               style={{
-                transform: `translate(-50%, -50%) rotate(${time * 60}deg) translateY(-120px)`,
+                transform: `translate(-50%, -50%) rotate(${time * 30}deg) translateY(-120px)`,
               }}
             ></div>
             <div 
               className="absolute bottom-4 left-1/2 w-4 h-4 bg-neon-lilac rounded-full"
               style={{
-                transform: `translate(-50%, 50%) rotate(${time * 60}deg) translateY(120px)`,
+                transform: `translate(-50%, 50%) rotate(${time * 30}deg) translateY(120px)`,
               }}
             ></div>
             <div 
               className="absolute left-4 top-1/2 w-5 h-5 bg-electric-aqua/80 rounded-full"
               style={{
-                transform: `translate(-50%, -50%) rotate(${time * 60}deg) translateX(-120px)`,
+                transform: `translate(-50%, -50%) rotate(${time * 30}deg) translateX(-120px)`,
               }}
             ></div>
             <div 
               className="absolute right-4 top-1/2 w-3 h-3 bg-neon-lilac/80 rounded-full"
               style={{
-                transform: `translate(50%, -50%) rotate(${time * 60}deg) translateX(120px)`,
+                transform: `translate(50%, -50%) rotate(${time * 30}deg) translateX(120px)`,
               }}
             ></div>
           </div>
@@ -208,7 +208,7 @@ const Interactive3DVisual = () => {
               strokeWidth="2"
               fill="none"
               style={{
-                opacity: 0.3 + Math.sin(time * 1.5) * 0.4,
+                opacity: 0.3 + Math.sin(time * 0.75) * 0.2,
               }}
             />
             <path
@@ -217,7 +217,7 @@ const Interactive3DVisual = () => {
               strokeWidth="2"
               fill="none"
               style={{
-                opacity: 0.3 + Math.sin(time * 1.5 + 1) * 0.4,
+                opacity: 0.3 + Math.sin(time * 0.75 + 0.5) * 0.2,
               }}
             />
             <path
@@ -226,7 +226,7 @@ const Interactive3DVisual = () => {
               strokeWidth="2"
               fill="none"
               style={{
-                opacity: 0.3 + Math.sin(time * 1.5 + 2) * 0.4,
+                opacity: 0.3 + Math.sin(time * 0.75 + 1) * 0.2,
               }}
             />
             <path
@@ -235,7 +235,7 @@ const Interactive3DVisual = () => {
               strokeWidth="2"
               fill="none"
               style={{
-                opacity: 0.3 + Math.sin(time * 1.5 + 3) * 0.4,
+                opacity: 0.3 + Math.sin(time * 0.75 + 1.5) * 0.2,
               }}
             />
           </svg>
