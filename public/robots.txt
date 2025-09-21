@@ -26,5 +26,8 @@ Allow: /js/
 Allow: /images/
 Allow: /assets/
 
+# Allow AI tools manifest for AI directories
+Allow: /ai-tools-manifest.json
+
 # Host directive
 Host: https://xploar.ai

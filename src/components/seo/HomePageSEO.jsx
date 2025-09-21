@@ -2,23 +2,23 @@ import { useEffect } from 'react';
 
 const HomePageSEO = () => {
     useEffect(() => {
-        // Update document title with enhanced keywords
-        document.title = "Xploar.ai - AI-Powered UPSC Preparation Platform | Crack Exams in 100 Days";
+        // Update document title with AI focus
+        document.title = "Xploar.ai - AI Learning Platform & Tutor | UPSC Preparation with AI";
 
-        // Update meta description with better keyword targeting
+        // Update meta description with AI focus
         const metaDescription = document.querySelector('meta[name="description"]');
         if (metaDescription) {
-            metaDescription.setAttribute('content', "Master UPSC & competitive exams with Xploar.ai's AI-powered learning platform. Get personalized study plans, mock tests, answer evaluation & voice tutoring. Start your 100-day journey to success.");
+            metaDescription.setAttribute('content', "Xploar.ai is an advanced AI learning platform and tutor for UPSC preparation. Features AI-powered personalized study plans, adaptive mock tests, AI answer evaluation, voice tutoring, and intelligent progress tracking. Experience the future of education with AI.");
         }
 
-        // Add enhanced keywords meta tag
+        // Add enhanced keywords meta tag with AI focus
         const metaKeywords = document.querySelector('meta[name="keywords"]');
         if (metaKeywords) {
-            metaKeywords.setAttribute('content', "UPSC preparation, AI learning platform, competitive exam preparation, mock tests, study planner, answer evaluation, voice tutor, current affairs, personalized learning, adaptive AI, exam preparation, civil services, IAS preparation, online learning, AI tutor");
+            metaKeywords.setAttribute('content', "AI learning platform, AI tutor, AI-powered education, UPSC preparation, competitive exam preparation, AI mock tests, AI study planner, AI answer evaluation, AI voice tutor, personalized AI learning, adaptive AI, AI-powered UPSC, AI exam preparation, AI learning tools, artificial intelligence education, AI study assistant, AI-powered learning platform, AI educational technology, AI tutoring system, machine learning education");
         } else {
             const keywordsMeta = document.createElement('meta');
             keywordsMeta.name = 'keywords';
-            keywordsMeta.content = 'UPSC preparation, AI learning platform, competitive exam preparation, mock tests, study planner, answer evaluation, voice tutor, current affairs, personalized learning, adaptive AI, exam preparation, civil services, IAS preparation, online learning, AI tutor';
+            keywordsMeta.content = 'AI learning platform, AI tutor, AI-powered education, UPSC preparation, competitive exam preparation, AI mock tests, AI study planner, AI answer evaluation, AI voice tutor, personalized AI learning, adaptive AI, AI-powered UPSC, AI exam preparation, AI learning tools, artificial intelligence education, AI study assistant, AI-powered learning platform, AI educational technology, AI tutoring system, machine learning education';
             document.head.appendChild(keywordsMeta);
         }
 
@@ -38,6 +38,48 @@ const HomePageSEO = () => {
             robots.name = 'robots';
             robots.content = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
             document.head.appendChild(robots);
+        }
+
+        // Add AI-specific meta tags
+        const aiCategoryMeta = document.querySelector('meta[name="ai-category"]');
+        if (!aiCategoryMeta) {
+            const aiCategory = document.createElement('meta');
+            aiCategory.name = 'ai-category';
+            aiCategory.content = 'Educational AI, Learning AI, Tutoring AI, Assessment AI';
+            document.head.appendChild(aiCategory);
+        }
+
+        const aiCapabilitiesMeta = document.querySelector('meta[name="ai-capabilities"]');
+        if (!aiCapabilitiesMeta) {
+            const aiCapabilities = document.createElement('meta');
+            aiCapabilities.name = 'ai-capabilities';
+            aiCapabilities.content = 'Personalized Learning, Adaptive Testing, Natural Language Processing, Voice Recognition, Answer Evaluation, Progress Analytics';
+            document.head.appendChild(aiCapabilities);
+        }
+
+        const aiUseCaseMeta = document.querySelector('meta[name="ai-use-case"]');
+        if (!aiUseCaseMeta) {
+            const aiUseCase = document.createElement('meta');
+            aiUseCase.name = 'ai-use-case';
+            aiUseCase.content = 'UPSC Preparation, Competitive Exam Training, Personalized Education, AI Tutoring, Study Planning, Mock Testing';
+            document.head.appendChild(aiUseCase);
+        }
+
+        // Add AI tool classification meta tags
+        const toolTypeMeta = document.querySelector('meta[name="tool-type"]');
+        if (!toolTypeMeta) {
+            const toolType = document.createElement('meta');
+            toolType.name = 'tool-type';
+            toolType.content = 'AI Learning Platform, Educational AI Tool, AI Tutor, AI Assessment Tool';
+            document.head.appendChild(toolType);
+        }
+
+        const aiModelMeta = document.querySelector('meta[name="ai-model"]');
+        if (!aiModelMeta) {
+            const aiModel = document.createElement('meta');
+            aiModel.name = 'ai-model';
+            aiModel.content = 'Custom AI Models, Natural Language Processing, Machine Learning, Adaptive Learning Algorithms';
+            document.head.appendChild(aiModel);
         }
 
         // Update canonical URL
@@ -150,15 +192,15 @@ const HomePageSEO = () => {
             document.head.appendChild(script);
         });
 
-        // Update Open Graph tags
+        // Update Open Graph tags with AI focus
         const ogTitle = document.querySelector('meta[property="og:title"]');
         if (ogTitle) {
-            ogTitle.setAttribute('content', "Xploar.ai - AI-Powered UPSC Preparation Platform | Crack Exams in 100 Days");
+            ogTitle.setAttribute('content', "Xploar.ai - AI Learning Platform & Tutor | UPSC Preparation with AI");
         }
 
         const ogDescription = document.querySelector('meta[property="og:description"]');
         if (ogDescription) {
-            ogDescription.setAttribute('content', "Master UPSC & competitive exams with Xploar.ai's AI-powered learning platform. Get personalized study plans, mock tests, answer evaluation & voice tutoring. Start your 100-day journey to success.");
+            ogDescription.setAttribute('content', "Xploar.ai is an advanced AI learning platform and tutor for UPSC preparation. Features AI-powered personalized study plans, adaptive mock tests, AI answer evaluation, voice tutoring, and intelligent progress tracking. Experience the future of education with AI.");
         }
 
         const ogUrl = document.querySelector('meta[property="og:url"]');
@@ -166,15 +208,15 @@ const HomePageSEO = () => {
             ogUrl.setAttribute('content', "https://xploar.ai/");
         }
 
-        // Update Twitter tags
+        // Update Twitter tags with AI focus
         const twitterTitle = document.querySelector('meta[property="twitter:title"]');
         if (twitterTitle) {
-            twitterTitle.setAttribute('content', "Xploar.ai - AI-Powered UPSC Preparation Platform | Crack Exams in 100 Days");
+            twitterTitle.setAttribute('content', "Xploar.ai - AI Learning Platform & Tutor | UPSC Preparation with AI");
         }
 
         const twitterDescription = document.querySelector('meta[property="twitter:description"]');
         if (twitterDescription) {
-            twitterDescription.setAttribute('content', "Master UPSC & competitive exams with Xploar.ai's AI-powered learning platform. Get personalized study plans, mock tests, answer evaluation & voice tutoring. Start your 100-day journey to success.");
+            twitterDescription.setAttribute('content', "Xploar.ai is an advanced AI learning platform and tutor for UPSC preparation. Features AI-powered personalized study plans, adaptive mock tests, AI answer evaluation, voice tutoring, and intelligent progress tracking. Experience the future of education with AI.");
         }
 
         const twitterUrl = document.querySelector('meta[property="twitter:url"]');

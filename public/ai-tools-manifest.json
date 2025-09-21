@@ -1,0 +1,152 @@
+{
+  "name": "Xploar.ai",
+  "description": "AI-powered learning platform and tutor for UPSC preparation and competitive exams",
+  "version": "2.0",
+  "category": "Educational AI",
+  "subcategory": "Learning Platform",
+  "tags": [
+    "AI Learning Platform",
+    "AI Tutor",
+    "UPSC Preparation",
+    "Educational AI",
+    "Personalized Learning",
+    "Adaptive Testing",
+    "AI Assessment",
+    "Voice Tutoring",
+    "Answer Evaluation",
+    "Study Planning",
+    "Competitive Exam Preparation",
+    "AI-Powered Education"
+  ],
+  "features": [
+    {
+      "name": "AI-Powered Study Planner",
+      "description": "Personalized study plans that adapt to your learning patterns and progress",
+      "category": "Planning"
+    },
+    {
+      "name": "Adaptive Mock Tests",
+      "description": "AI-driven mock tests that adjust difficulty based on your performance",
+      "category": "Assessment"
+    },
+    {
+      "name": "AI Answer Evaluation",
+      "description": "Intelligent evaluation of written answers with detailed feedback",
+      "category": "Evaluation"
+    },
+    {
+      "name": "Voice Tutor",
+      "description": "AI voice assistant for hands-free doubt resolution and learning",
+      "category": "Tutoring"
+    },
+    {
+      "name": "Current Affairs AI",
+      "description": "AI-curated current affairs updates with relevance scoring",
+      "category": "Content"
+    },
+    {
+      "name": "Progress Analytics",
+      "description": "AI-powered progress tracking and performance insights",
+      "category": "Analytics"
+    }
+  ],
+  "aiCapabilities": [
+    "Natural Language Processing",
+    "Machine Learning",
+    "Adaptive Learning Algorithms",
+    "Voice Recognition",
+    "Answer Analysis",
+    "Progress Prediction",
+    "Personalized Recommendations",
+    "Intelligent Content Curation"
+  ],
+  "useCases": [
+    "UPSC Civil Services Preparation",
+    "Competitive Exam Training",
+    "Personalized Education",
+    "AI Tutoring",
+    "Study Planning",
+    "Mock Testing",
+    "Answer Writing Practice",
+    "Current Affairs Preparation"
+  ],
+  "targetAudience": [
+    "UPSC Aspirants",
+    "Competitive Exam Students",
+    "Government Job Seekers",
+    "Civil Services Candidates",
+    "Educational Institutions",
+    "Learning Centers"
+  ],
+  "pricing": {
+    "model": "Freemium",
+    "freeFeatures": [
+      "Basic AI Study Planner",
+      "Limited Mock Tests",
+      "AI Answer Evaluation",
+      "Voice Tutor Access"
+    ],
+    "premiumFeatures": [
+      "Advanced AI Analytics",
+      "Unlimited Mock Tests",
+      "Personalized AI Coaching",
+      "Priority Support"
+    ]
+  },
+  "technicalSpecs": {
+    "platform": "Web Browser",
+    "languages": ["English", "Hindi"],
+    "accessibility": "WCAG 2.1 AA Compliant",
+    "browserSupport": ["Chrome", "Firefox", "Safari", "Edge"],
+    "mobileResponsive": true,
+    "offlineCapable": false
+  },
+  "integrations": [
+    "Google Analytics",
+    "Supabase Database",
+    "Voice Recognition APIs",
+    "AI/ML Processing Services"
+  ],
+  "security": {
+    "dataEncryption": "End-to-End",
+    "privacyCompliant": "GDPR, CCPA",
+    "dataStorage": "Secure Cloud",
+    "userAuthentication": "Multi-Factor"
+  },
+  "support": {
+    "email": "support@xploar.ai",
+    "documentation": "https://xploar.ai/docs",
+    "community": "https://xploar.ai/community",
+    "responseTime": "24 hours"
+  },
+  "launchDate": "2024-01-01",
+  "lastUpdated": "2024-12-21",
+  "website": "https://xploar.ai",
+  "demo": "https://xploar.ai/demo",
+  "screenshots": [
+    "https://xploar.ai/screenshot-1.jpg",
+    "https://xploar.ai/screenshot-2.jpg",
+    "https://xploar.ai/screenshot-3.jpg"
+  ],
+  "reviews": {
+    "averageRating": 4.8,
+    "totalReviews": 150,
+    "platforms": ["Google", "Trustpilot", "Product Hunt"]
+  },
+  "awards": [
+    "Best AI Learning Platform 2024",
+    "Innovation in Education Technology"
+  ],
+  "partnerships": [
+    "Educational Institutions",
+    "Government Training Centers",
+    "Learning Management Systems"
+  ],
+  "roadmap": [
+    "Advanced AI Tutoring",
+    "Multi-language Support",
+    "Mobile App Launch",
+    "Offline Learning Mode",
+    "AI-Powered Career Guidance"
+  ]
+}
