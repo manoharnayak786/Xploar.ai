@@ -4,6 +4,16 @@ const ELEVENLABS_VOICE_ID = process.env.REACT_APP_ELEVENLABS_VOICE_ID; // Your p
 
 export const synthesizeSpeech = async (text, voiceId = ELEVENLABS_VOICE_ID) => {
   try {
+    // For now, we'll use a placeholder that simulates the API call
+    // In production, you'll replace this with actual ElevenLabs API
+    console.log('Synthesizing speech with ElevenLabs:', { text, voiceId });
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // For development, we'll return a mock audio blob
+    // In production, replace with actual ElevenLabs API call:
+    /*
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
@@ -28,6 +38,10 @@ export const synthesizeSpeech = async (text, voiceId = ELEVENLABS_VOICE_ID) => {
     }
 
     return await response.blob();
+    */
+    
+    // Mock implementation for development
+    return new Blob(['mock audio data'], { type: 'audio/mpeg' });
   } catch (error) {
     console.error('ElevenLabs synthesis error:', error);
     throw error;
@@ -36,6 +50,11 @@ export const synthesizeSpeech = async (text, voiceId = ELEVENLABS_VOICE_ID) => {
 
 export const getVoices = async () => {
   try {
+    // Mock implementation for development
+    console.log('Fetching voices from ElevenLabs');
+    
+    // In production, replace with actual API call:
+    /*
     const response = await fetch('https://api.elevenlabs.io/v1/voices', {
       headers: {
         'xi-api-key': ELEVENLABS_API_KEY,
@@ -47,6 +66,15 @@ export const getVoices = async () => {
     }
 
     return await response.json();
+    */
+    
+    // Mock voices for development
+    return {
+      voices: [
+        { voice_id: 'mock_voice_1', name: 'Manohar Voice Clone' },
+        { voice_id: 'mock_voice_2', name: 'Professional Male' }
+      ]
+    };
   } catch (error) {
     console.error('ElevenLabs voices error:', error);
     throw error;
@@ -55,6 +83,11 @@ export const getVoices = async () => {
 
 export const createVoiceClone = async (name, description, files) => {
   try {
+    console.log('Creating voice clone:', { name, description });
+    
+    // Mock implementation for development
+    // In production, replace with actual API call:
+    /*
     const formData = new FormData();
     formData.append('name', name);
     formData.append('description', description);
@@ -76,6 +109,14 @@ export const createVoiceClone = async (name, description, files) => {
     }
 
     return await response.json();
+    */
+    
+    // Mock response for development
+    return {
+      voice_id: 'mock_cloned_voice',
+      name: name,
+      status: 'processing'
+    };
   } catch (error) {
     console.error('ElevenLabs voice clone error:', error);
     throw error;

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { synthesizeSpeech } from '../../lib/elevenlabs';
 
 const VoiceCallButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,8 +8,10 @@ const VoiceCallButton = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [queryType, setQueryType] = useState(null);
   const [response, setResponse] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
   
   const recognitionRef = useRef(null);
+  const audioRef = useRef(null);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -66,10 +69,10 @@ const VoiceCallButton = () => {
     const aiResponse = generateAIResponse(transcript, detectedType);
     setResponse(aiResponse);
     
-    // Simulate processing time
-    setTimeout(() => {
-      setIsProcessing(false);
-    }, 2000);
+    // Convert response to speech using ElevenLabs
+    await convertToSpeech(aiResponse);
+    
+    setIsProcessing(false);
   };
 
   const generateAIResponse = (transcript, type) => {
@@ -81,6 +84,32 @@ const VoiceCallButton = () => {
     };
     
     return responses[type] || responses.general;
+  };
+
+  const convertToSpeech = async (text) => {
+    try {
+      // Use ElevenLabs for voice synthesis
+      const audioBlob = await synthesizeSpeech(text);
+      
+      // Create audio URL and play
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Speech synthesis error:', error);
+      
+      // Fallback to browser speech synthesis
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.onend = () => setIsPlaying(false);
+      speechSynthesis.speak(utterance);
+      setIsPlaying(true);
+    }
   };
 
   const startRecording = () => {
@@ -102,6 +131,7 @@ const VoiceCallButton = () => {
     setResponse('');
     setQueryType(null);
     setIsProcessing(false);
+    setIsPlaying(false);
   };
 
   return (
@@ -226,6 +256,21 @@ const VoiceCallButton = () => {
                 <span className="text-sm">Listening...</span>
               </div>
             )}
+
+            {/* Playing Indicator */}
+            {isPlaying && (
+              <div className="mt-4 flex items-center justify-center gap-2 text-electric-aqua">
+                <div className="w-3 h-3 bg-electric-aqua rounded-full animate-pulse"></div>
+                <span className="text-sm">Playing Manohar's Response...</span>
+              </div>
+            )}
+
+            {/* Audio Element */}
+            <audio
+              ref={audioRef}
+              onEnded={() => setIsPlaying(false)}
+              className="hidden"
+            />
           </div>
         </div>
       )}
