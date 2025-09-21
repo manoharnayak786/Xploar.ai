@@ -1,21 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  
+  <!-- Homepage -->
   <url>
     <loc>https://xploar.ai/</loc>
-    <lastmod>2024-12-19</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://xploar.ai/og-image.jpg</image:loc>
+      <image:title>Xploar.ai - AI-Powered UPSC Preparation Platform</image:title>
+      <image:caption>Master UPSC & competitive exams with AI-powered learning</image:caption>
+    </image:image>
   </url>
+  
+  <!-- About Page -->
   <url>
     <loc>https://xploar.ai/about</loc>
-    <lastmod>2024-12-19</lastmod>
+    <lastmod>2024-12-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  
+  <!-- Contact Page -->
   <url>
     <loc>https://xploar.ai/contact</loc>
-    <lastmod>2024-12-19</lastmod>
+    <lastmod>2024-12-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://xploar.ai/privacy-policy</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Terms & Conditions -->
+  <url>
+    <loc>https://xploar.ai/terms-conditions</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- UPSC Preparation Landing -->
+  <url>
+    <loc>https://xploar.ai/upsc-preparation</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- AI Learning Platform -->
+  <url>
+    <loc>https://xploar.ai/ai-learning</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Mock Tests -->
+  <url>
+    <loc>https://xploar.ai/mock-tests</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Study Planner -->
+  <url>
+    <loc>https://xploar.ai/study-planner</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Answer Evaluation -->
+  <url>
+    <loc>https://xploar.ai/answer-evaluation</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Voice Tutor -->
+  <url>
+    <loc>https://xploar.ai/voice-tutor</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Current Affairs -->
+  <url>
+    <loc>https://xploar.ai/current-affairs</loc>
+    <lastmod>2024-12-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
 </urlset>

@@ -7,6 +7,24 @@ Sitemap: https://xploar.ai/sitemap.xml
 # Crawl-delay for respectful crawling
 Crawl-delay: 1
 
-# Disallow admin areas (if any)
+# Disallow admin areas and sensitive paths
 Disallow: /admin/
 Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /private/
+
+# Allow important pages
+Allow: /about
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms-conditions
+
+# Allow search engines to access CSS and JS
+Allow: /css/
+Allow: /js/
+Allow: /images/
+Allow: /assets/
+
+# Host directive
+Host: https://xploar.ai

@@ -9,6 +9,7 @@ import AllInOneSection from "../components/home/AllInOneSection";
 import OutcomesSection from "../components/home/OutcomesSection";
 import FaqSection from "../components/home/FaqSection";
 import HomePageSEO from "../components/seo/HomePageSEO";
+import FAQSchema from "../components/seo/FAQSchema";
 
 const HomePage = () => {
   useAos();
@@ -16,6 +17,7 @@ const HomePage = () => {
   return (
     <>
       <HomePageSEO />
+      <FAQSchema />
       <DotBackground />
       <HeroSection />
       <div id="main-content" className="relative bg-ice-white z-10">
