@@ -700,40 +700,52 @@ const VoiceCallButton = () => {
               </div>
             )}
 
-            {/* Connected State - Siri-like Conversation */}
+            {/* Connected State - Pure Voice Conversation */}
             {callState === 'connected' && (
               <div className="space-y-4">
                 <div className="text-center">
-                  <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
-                    isUserSpeaking ? 'bg-red-500 animate-pulse' : 
-                    isAISpeaking ? 'bg-blue-500 animate-pulse' : 
+                  <div className={`w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center transition-all duration-500 ${
+                    isUserSpeaking ? 'bg-red-500 animate-pulse scale-110' : 
+                    isAISpeaking ? 'bg-blue-500 animate-pulse scale-110' : 
                     isRecording ? 'bg-gradient-to-r from-electric-aqua to-neon-lilac animate-pulse' : 'bg-green-500'
                   }`}>
-                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
                     </svg>
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Connected!</h4>
-                  <p className="text-gray-600 text-sm">
+                  <h4 className="text-xl font-semibold text-gray-900 mb-2">
                     {isUserSpeaking ? 'You are speaking...' : 
                      isAISpeaking ? 'Manohar is responding...' : 
-                     isRecording ? 'Listening... Just speak naturally' : 'Ready to listen'}
+                     isRecording ? 'Listening...' : 'Connected'}
+                  </h4>
+                  <p className="text-gray-600 text-sm">
+                    {isUserSpeaking ? 'Speak naturally' : 
+                     isAISpeaking ? 'Wait for response' : 
+                     isRecording ? 'Just talk - no buttons needed' : 'Ready for voice conversation'}
                   </p>
                 </div>
                 
-                {/* Live Transcript Display */}
-                {transcript && (
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">You said:</h5>
-                    <p className="text-gray-900">{transcript}</p>
-                  </div>
-                )}
+                {/* Voice Wave Animation */}
+                <div className="flex justify-center space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-1 bg-gradient-to-t from-electric-aqua to-neon-lilac rounded-full transition-all duration-300 ${
+                        (isUserSpeaking || isAISpeaking) ? 'animate-pulse' : ''
+                      }`}
+                      style={{
+                        height: (isUserSpeaking || isAISpeaking) ? `${20 + Math.random() * 20}px` : '8px',
+                        animationDelay: `${i * 0.1}s`
+                      }}
+                    />
+                  ))}
+                </div>
                 
-                {/* AI Response Display */}
-                {response && (
-                  <div className="p-4 bg-gradient-to-r from-electric-aqua/10 to-neon-lilac/10 rounded-xl border border-electric-aqua/20">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Manohar:</h5>
-                    <p className="text-gray-900">{response}</p>
+                {/* Minimal Processing Indicator */}
+                {isProcessing && (
+                  <div className="flex items-center justify-center space-x-2 text-gray-500">
+                    <div className="w-2 h-2 bg-electric-aqua rounded-full animate-pulse"></div>
+                    <span className="text-xs">Processing...</span>
                   </div>
                 )}
                 
@@ -746,21 +758,6 @@ const VoiceCallButton = () => {
               </div>
             )}
 
-            {/* Recording Indicator */}
-            {isRecording && (
-              <div className="mt-4 flex items-center justify-center gap-2 text-red-600">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-sm">Listening...</span>
-              </div>
-            )}
-
-            {/* Playing Indicator */}
-            {isPlaying && (
-              <div className="mt-4 flex items-center justify-center gap-2 text-electric-aqua">
-                <div className="w-3 h-3 bg-electric-aqua rounded-full animate-pulse"></div>
-                <span className="text-sm">Manohar is speaking...</span>
-              </div>
-            )}
 
             {/* Audio Element */}
             <audio
