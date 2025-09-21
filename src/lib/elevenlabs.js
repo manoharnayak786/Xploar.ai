@@ -37,6 +37,64 @@ export const synthesizeSpeech = async (text, voiceId = ELEVENLABS_VOICE_ID) => {
   }
 };
 
+export const synthesizeSpeechStreaming = async (text, voiceId = ELEVENLABS_VOICE_ID, onChunk) => {
+  try {
+    console.log('Streaming speech with ElevenLabs:', { text, voiceId });
+    
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || 'pNInz6obpgDQGcFmaJgB'}/stream`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': ELEVENLABS_API_KEY,
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.5,
+          style: 0.0,
+          use_speaker_boost: true
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`ElevenLabs streaming API error: ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const chunks = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) break;
+      
+      chunks.push(value);
+      
+      // Call the onChunk callback with the audio chunk
+      if (onChunk) {
+        onChunk(value);
+      }
+    }
+
+    // Combine all chunks into a single blob
+    const combinedChunks = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+    let offset = 0;
+    for (const chunk of chunks) {
+      combinedChunks.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    return new Blob([combinedChunks], { type: 'audio/mpeg' });
+  } catch (error) {
+    console.error('ElevenLabs streaming error:', error);
+    throw error;
+  }
+};
+
 export const getVoices = async () => {
   try {
     // Mock implementation for development

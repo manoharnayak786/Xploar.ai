@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { synthesizeSpeech } from '../../lib/elevenlabs';
+import { synthesizeSpeech, synthesizeSpeechStreaming } from '../../lib/elevenlabs';
 import { createTask } from '../../lib/clickup';
 import { addVoiceInteractionToSheet } from '../../lib/googleSheets';
 
@@ -18,8 +18,16 @@ const VoiceCallButton = () => {
   const [isRinging, setIsRinging] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   
+  // Real-time voice states
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [voiceActivityTimeout, setVoiceActivityTimeout] = useState(null);
+  
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -121,18 +129,28 @@ const VoiceCallButton = () => {
     try {
       // Stop listening while speaking
       stopContinuousListening();
+      setIsAISpeaking(true);
+      setIsPlaying(true);
       
-      // Use ElevenLabs for voice synthesis
-      const audioBlob = await synthesizeSpeech(text);
+      // Use ElevenLabs streaming for real-time response
+      const audioBlob = await synthesizeSpeechStreaming(text, null, (chunk) => {
+        // Play audio chunks as they arrive for real-time experience
+        const audioChunk = new Blob([chunk], { type: 'audio/mpeg' });
+        const audioUrl = URL.createObjectURL(audioChunk);
+        
+        // Create temporary audio element for streaming
+        const tempAudio = new Audio(audioUrl);
+        tempAudio.play().catch(console.error);
+      });
       
-      // Create audio URL and play
+      // Also play the complete audio for fallback
       const audioUrl = URL.createObjectURL(audioBlob);
       
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
         audioRef.current.play();
-        setIsPlaying(true);
       }
+      
     } catch (error) {
       console.error('Speech synthesis error:', error);
       
@@ -142,6 +160,7 @@ const VoiceCallButton = () => {
       utterance.pitch = 1.0;
       utterance.onend = () => {
         setIsPlaying(false);
+        setIsAISpeaking(false);
         // Restart listening after speech ends
         setTimeout(() => {
           if (callState === 'connected') {
@@ -235,10 +254,80 @@ const VoiceCallButton = () => {
     await convertToSpeech(greeting);
   };
 
-  const startContinuousListening = () => {
+  const startContinuousListening = async () => {
     if (recognitionRef.current && callState === 'connected') {
       setIsRecording(true);
+      
+      // Start voice activity detection
+      await startVoiceActivityDetection();
+      
+      // Start speech recognition
       recognitionRef.current.start();
+    }
+  };
+
+  const startVoiceActivityDetection = async () => {
+    try {
+      // Get microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      
+      // Create audio context for voice activity detection
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      audioContextRef.current = audioContext;
+      
+      const analyser = audioContext.createAnalyser();
+      analyserRef.current = analyser;
+      
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      
+      analyser.fftSize = 256;
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      // Voice activity detection loop
+      const detectVoiceActivity = () => {
+        if (callState !== 'connected' || isAISpeaking) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        
+        // Calculate average volume
+        const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+        
+        // Voice activity threshold
+        const threshold = 30;
+        
+        if (average > threshold && !isUserSpeaking) {
+          setIsUserSpeaking(true);
+          console.log('User started speaking');
+          
+          // Clear any existing timeout
+          if (voiceActivityTimeout) {
+            clearTimeout(voiceActivityTimeout);
+          }
+        } else if (average <= threshold && isUserSpeaking) {
+          // Set timeout to detect end of speech
+          const timeout = setTimeout(() => {
+            setIsUserSpeaking(false);
+            console.log('User stopped speaking');
+            
+            // Process the speech after user stops talking
+            if (transcript.trim()) {
+              handleQueryClassification(transcript);
+            }
+          }, 1000); // 1 second silence threshold
+          
+          setVoiceActivityTimeout(timeout);
+        }
+        
+        // Continue detection
+        requestAnimationFrame(detectVoiceActivity);
+      };
+      
+      detectVoiceActivity();
+    } catch (error) {
+      console.error('Voice activity detection error:', error);
     }
   };
 
@@ -247,6 +336,24 @@ const VoiceCallButton = () => {
       recognitionRef.current.stop();
       setIsRecording(false);
     }
+    
+    // Clean up voice activity detection
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    
+    if (voiceActivityTimeout) {
+      clearTimeout(voiceActivityTimeout);
+      setVoiceActivityTimeout(null);
+    }
+    
+    setIsUserSpeaking(false);
   };
 
   const endCall = () => {
@@ -520,6 +627,8 @@ const VoiceCallButton = () => {
               <div className="space-y-4">
                 <div className="text-center">
                   <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
+                    isUserSpeaking ? 'bg-red-500 animate-pulse' : 
+                    isAISpeaking ? 'bg-blue-500 animate-pulse' : 
                     isRecording ? 'bg-gradient-to-r from-electric-aqua to-neon-lilac animate-pulse' : 'bg-green-500'
                   }`}>
                     <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -528,7 +637,9 @@ const VoiceCallButton = () => {
                   </div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">Connected!</h4>
                   <p className="text-gray-600 text-sm">
-                    {isRecording ? 'Listening... Just speak naturally' : 'Ready to listen'}
+                    {isUserSpeaking ? 'You are speaking...' : 
+                     isAISpeaking ? 'Manohar is responding...' : 
+                     isRecording ? 'Listening... Just speak naturally' : 'Ready to listen'}
                   </p>
                 </div>
                 
@@ -578,6 +689,7 @@ const VoiceCallButton = () => {
               ref={audioRef}
               onEnded={() => {
                 setIsPlaying(false);
+                setIsAISpeaking(false);
                 // Restart listening after ElevenLabs audio ends
                 setTimeout(() => {
                   if (callState === 'connected') {
