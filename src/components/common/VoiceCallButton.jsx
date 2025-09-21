@@ -12,6 +12,12 @@ const VoiceCallButton = () => {
   const [response, setResponse] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   
+  // New call flow states
+  const [callState, setCallState] = useState('idle'); // 'idle', 'connecting', 'ringing', 'connected', 'ended'
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isRinging, setIsRinging] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
 
@@ -27,7 +33,11 @@ const VoiceCallButton = () => {
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setTranscript(transcript);
-        handleQueryClassification(transcript);
+        
+        // Only process if connected
+        if (callState === 'connected') {
+          handleQueryClassification(transcript);
+        }
       };
 
       recognitionRef.current.onerror = (event) => {
@@ -134,6 +144,73 @@ const VoiceCallButton = () => {
     setQueryType(null);
     setIsProcessing(false);
     setIsPlaying(false);
+    setCallState('idle');
+    setIsConnecting(false);
+    setIsRinging(false);
+    setIsConnected(false);
+  };
+
+  const startCall = () => {
+    setCallState('connecting');
+    setIsConnecting(true);
+    setIsOpen(true);
+    
+    // Start connecting animation
+    setTimeout(() => {
+      setCallState('ringing');
+      setIsConnecting(false);
+      setIsRinging(true);
+      
+      // Play ringing tone (you can add actual audio file)
+      playRingingTone();
+      
+      // After 3 seconds, connect
+      setTimeout(() => {
+        setCallState('connected');
+        setIsRinging(false);
+        setIsConnected(true);
+        
+        // Play Manohar's greeting
+        playManoharGreeting();
+      }, 3000);
+    }, 1000);
+  };
+
+  const playRingingTone = () => {
+    // Create a simple ringing tone using Web Audio API
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.5);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 3);
+  };
+
+  const playManoharGreeting = async () => {
+    const greeting = "Hey, what's going on? How can I help you today?";
+    await convertToSpeech(greeting);
+  };
+
+  const endCall = () => {
+    setCallState('ended');
+    setIsConnected(false);
+    setIsRinging(false);
+    setIsConnecting(false);
+    
+    // Reset after a short delay
+    setTimeout(() => {
+      resetConversation();
+      setIsOpen(false);
+    }, 1000);
   };
 
   const handleRouteQuery = async () => {
@@ -292,10 +369,9 @@ const VoiceCallButton = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-electric-aqua to-neon-lilac rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
           
-          {/* Microphone Icon */}
+          {/* Phone Call Icon */}
           <svg className="relative w-8 h-8 text-white mx-auto" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
           </svg>
           
           {/* Pulse animation */}
@@ -321,79 +397,99 @@ const VoiceCallButton = () => {
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-r from-electric-aqua to-neon-lilac rounded-full mx-auto mb-4 flex items-center justify-center">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Talk to Manohar</h3>
-              <p className="text-gray-600 text-sm">Ask me anything about Xploar.ai, partnerships, or investments</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Call Manohar</h3>
+              <p className="text-gray-600 text-sm">Real-time voice conversation with the founder</p>
             </div>
 
-            {/* Query Type Indicator */}
-            {queryType && (
-              <div className="mb-4 p-3 bg-gradient-to-r from-electric-aqua/10 to-neon-lilac/10 rounded-xl border border-electric-aqua/20">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-electric-aqua rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700 capitalize">
-                    {queryType} Query Detected
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Transcript Display */}
-            {transcript && (
-              <div className="mb-4 p-4 bg-gray-50 rounded-xl">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Your Question:</h4>
-                <p className="text-gray-900">{transcript}</p>
-              </div>
-            )}
-
-            {/* AI Response Display */}
-            {response && (
-              <div className="mb-4 p-4 bg-gradient-to-r from-electric-aqua/10 to-neon-lilac/10 rounded-xl border border-electric-aqua/20">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Manohar's Response:</h4>
-                <p className="text-gray-900">{response}</p>
-              </div>
-            )}
-
-            {/* Controls */}
-            <div className="space-y-4">
-              {!transcript ? (
-                <button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={isProcessing}
-                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
-                    isRecording
-                      ? 'bg-red-500 hover:bg-red-600 text-white'
-                      : 'bg-gradient-to-r from-electric-aqua to-neon-lilac hover:shadow-lg text-white'
-                  } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {isRecording ? 'Stop Recording' : 'Start Voice Call'}
-                </button>
-              ) : (
-                <div className="space-y-2">
+            {/* Call Flow States */}
+            {callState === 'idle' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <p className="text-gray-600 mb-4">Click to start a real-time voice call with Manohar</p>
                   <button
-                    onClick={handleRouteQuery}
+                    onClick={startCall}
                     className="w-full py-3 px-6 bg-gradient-to-r from-electric-aqua to-neon-lilac text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
                   >
-                    Connect with Manohar
-                  </button>
-                  <button
-                    onClick={resetConversation}
-                    className="w-full py-2 px-4 text-gray-600 hover:text-gray-800 transition-colors"
-                  >
-                    Start New Conversation
+                    Start Call
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Processing Indicator */}
-            {isProcessing && (
-              <div className="mt-4 flex items-center justify-center gap-2 text-gray-600">
-                <div className="w-4 h-4 border-2 border-electric-aqua border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm">Processing your query...</span>
+            {/* Connecting State */}
+            {callState === 'connecting' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-electric-aqua to-neon-lilac rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Connecting with Founder...</h4>
+                  <p className="text-gray-600 text-sm">Please wait while we connect you</p>
+                </div>
+                
+                <button
+                  onClick={endCall}
+                  className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-300"
+                >
+                  Cancel Call
+                </button>
+              </div>
+            )}
+
+            {/* Ringing State */}
+            {callState === 'ringing' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-electric-aqua to-neon-lilac rounded-full mx-auto mb-4 flex items-center justify-center animate-bounce">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Ringing...</h4>
+                  <p className="text-gray-600 text-sm">Calling Manohar</p>
+                </div>
+                
+                <button
+                  onClick={endCall}
+                  className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-300"
+                >
+                  End Call
+                </button>
+              </div>
+            )}
+
+            {/* Connected State */}
+            {callState === 'connected' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Connected!</h4>
+                  <p className="text-gray-600 text-sm">You're now talking with Manohar</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <button
+                    onClick={startRecording}
+                    className="w-full py-3 px-6 bg-gradient-to-r from-electric-aqua to-neon-lilac text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
+                  >
+                    Start Speaking
+                  </button>
+                  <button
+                    onClick={endCall}
+                    className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-300"
+                  >
+                    End Call
+                  </button>
+                </div>
               </div>
             )}
 
@@ -409,7 +505,7 @@ const VoiceCallButton = () => {
             {isPlaying && (
               <div className="mt-4 flex items-center justify-center gap-2 text-electric-aqua">
                 <div className="w-3 h-3 bg-electric-aqua rounded-full animate-pulse"></div>
-                <span className="text-sm">Playing Manohar's Response...</span>
+                <span className="text-sm">Manohar is speaking...</span>
               </div>
             )}
 
