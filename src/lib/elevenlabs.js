@@ -1,20 +1,13 @@
 // ElevenLabs API integration for voice synthesis
-const ELEVENLABS_API_KEY = process.env.REACT_APP_ELEVENLABS_API_KEY;
+const ELEVENLABS_API_KEY = process.env.REACT_APP_ELEVENLABS_API_KEY || 'fdc72575644bae081da7963040d15648b628b3d8eb8115fa15b677d02a7fc8a9';
 const ELEVENLABS_VOICE_ID = process.env.REACT_APP_ELEVENLABS_VOICE_ID; // Your personal voice ID
 
 export const synthesizeSpeech = async (text, voiceId = ELEVENLABS_VOICE_ID) => {
   try {
-    // For now, we'll use a placeholder that simulates the API call
-    // In production, you'll replace this with actual ElevenLabs API
     console.log('Synthesizing speech with ElevenLabs:', { text, voiceId });
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // For development, we'll return a mock audio blob
-    // In production, replace with actual ElevenLabs API call:
-    /*
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    // Use actual ElevenLabs API
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || 'pNInz6obpgDQGcFmaJgB'}`, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
@@ -38,10 +31,6 @@ export const synthesizeSpeech = async (text, voiceId = ELEVENLABS_VOICE_ID) => {
     }
 
     return await response.blob();
-    */
-    
-    // Mock implementation for development
-    return new Blob(['mock audio data'], { type: 'audio/mpeg' });
   } catch (error) {
     console.error('ElevenLabs synthesis error:', error);
     throw error;

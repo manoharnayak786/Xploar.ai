@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { synthesizeSpeech } from '../../lib/elevenlabs';
 import { createTask } from '../../lib/clickup';
+import { addVoiceInteractionToSheet } from '../../lib/googleSheets';
 
 const VoiceCallButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -166,9 +167,10 @@ const VoiceCallButton = () => {
   };
 
   const routeToInvestorChannel = async (data) => {
-    // Route to WhatsApp for investors
-    const whatsappMessage = `🚀 New Investor Query via Xploar.ai Voice Call\n\nQuery: "${data.transcript}"\nResponse: "${data.response}"\nTime: ${data.timestamp}`;
-    const whatsappUrl = `https://wa.me/your_investor_whatsapp_number?text=${encodeURIComponent(whatsappMessage)}`;
+    // Route to email for investors
+    const emailSubject = `🚀 New Investor Query - Xploar.ai Voice Call`;
+    const emailBody = `Query: ${data.transcript}\n\nAI Response: ${data.response}\n\nTimestamp: ${data.timestamp}`;
+    const emailUrl = `mailto:manoharnayak786@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
     
     // Also send to ClickUp
     await sendToClickUp({
@@ -178,15 +180,15 @@ const VoiceCallButton = () => {
       assignee: 'investor_team'
     });
     
-    // Open WhatsApp
-    window.open(whatsappUrl, '_blank');
+    // Open email client
+    window.open(emailUrl, '_blank');
   };
 
   const routeToStakeholderChannel = async (data) => {
     // Route to email for stakeholders
     const emailSubject = `New Stakeholder Query - Xploar.ai Voice Call`;
     const emailBody = `Query: ${data.transcript}\n\nAI Response: ${data.response}\n\nTimestamp: ${data.timestamp}`;
-    const emailUrl = `mailto:stakeholders@xploar.ai?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    const emailUrl = `mailto:manoharnayak786@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
     
     // Also send to ClickUp
     await sendToClickUp({
@@ -201,9 +203,10 @@ const VoiceCallButton = () => {
   };
 
   const routeToSupportChannel = async (data) => {
-    // Route to WhatsApp for support
-    const whatsappMessage = `🆘 Support Query via Xploar.ai Voice Call\n\nQuery: "${data.transcript}"\nResponse: "${data.response}"\nTime: ${data.timestamp}`;
-    const whatsappUrl = `https://wa.me/your_support_whatsapp_number?text=${encodeURIComponent(whatsappMessage)}`;
+    // Route to email for support
+    const emailSubject = `🆘 Support Query - Xploar.ai Voice Call`;
+    const emailBody = `Query: ${data.transcript}\n\nAI Response: ${data.response}\n\nTimestamp: ${data.timestamp}`;
+    const emailUrl = `mailto:manoharnayak786@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
     
     // Also send to ClickUp
     await sendToClickUp({
@@ -213,15 +216,15 @@ const VoiceCallButton = () => {
       assignee: 'support_team'
     });
     
-    // Open WhatsApp
-    window.open(whatsappUrl, '_blank');
+    // Open email client
+    window.open(emailUrl, '_blank');
   };
 
   const routeToGeneralChannel = async (data) => {
     // Route to general email
     const emailSubject = `New General Query - Xploar.ai Voice Call`;
     const emailBody = `Query: ${data.transcript}\n\nAI Response: ${data.response}\n\nTimestamp: ${data.timestamp}`;
-    const emailUrl = `mailto:hello@xploar.ai?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    const emailUrl = `mailto:manoharnayak786@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
     
     // Also send to ClickUp
     await sendToClickUp({
@@ -250,14 +253,14 @@ const VoiceCallButton = () => {
         timestamp: data.timestamp
       });
       
-      // Log interaction to dashboard
-      logInteractionToDashboard(data);
+      // Log interaction to Google Sheets
+      logInteractionToGoogleSheets(data);
     } catch (error) {
       console.error('ClickUp integration error:', error);
     }
   };
 
-  const logInteractionToDashboard = (data) => {
+  const logInteractionToGoogleSheets = async (data) => {
     try {
       const interaction = {
         queryType: data.queryType,
@@ -270,21 +273,12 @@ const VoiceCallButton = () => {
         status: 'processed'
       };
       
-      // Get existing interactions
-      const existingInteractions = JSON.parse(localStorage.getItem('voiceInteractions') || '[]');
+      // Add to Google Sheets
+      await addVoiceInteractionToSheet(interaction);
       
-      // Add new interaction
-      const updatedInteractions = [...existingInteractions, {
-        ...interaction,
-        id: Date.now()
-      }];
-      
-      // Save to localStorage
-      localStorage.setItem('voiceInteractions', JSON.stringify(updatedInteractions));
-      
-      console.log('Interaction logged to dashboard:', interaction);
+      console.log('Interaction logged to Google Sheets:', interaction);
     } catch (error) {
-      console.error('Dashboard logging error:', error);
+      console.error('Google Sheets logging error:', error);
     }
   };
 
