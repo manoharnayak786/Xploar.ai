@@ -5,6 +5,8 @@ const VoiceCallButton = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [queryType, setQueryType] = useState(null);
+  const [response, setResponse] = useState('');
   
   const recognitionRef = useRef(null);
 
@@ -20,12 +22,7 @@ const VoiceCallButton = () => {
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setTranscript(transcript);
-        setIsProcessing(true);
-        
-        // Simulate processing time
-        setTimeout(() => {
-          setIsProcessing(false);
-        }, 2000);
+        handleQueryClassification(transcript);
       };
 
       recognitionRef.current.onerror = (event) => {
@@ -41,6 +38,50 @@ const VoiceCallButton = () => {
       console.warn('Speech recognition not supported in this browser');
     }
   }, []);
+
+  const handleQueryClassification = async (transcript) => {
+    setIsProcessing(true);
+    
+    // Classify query type based on keywords
+    const lowerTranscript = transcript.toLowerCase();
+    let detectedType = 'general';
+    
+    if (lowerTranscript.includes('invest') || lowerTranscript.includes('funding') || 
+        lowerTranscript.includes('investor') || lowerTranscript.includes('partnership') ||
+        lowerTranscript.includes('investment') || lowerTranscript.includes('fund')) {
+      detectedType = 'investor';
+    } else if (lowerTranscript.includes('stakeholder') || lowerTranscript.includes('business') || 
+               lowerTranscript.includes('collaboration') || lowerTranscript.includes('enterprise') ||
+               lowerTranscript.includes('partner') || lowerTranscript.includes('corporate')) {
+      detectedType = 'stakeholder';
+    } else if (lowerTranscript.includes('support') || lowerTranscript.includes('help') || 
+               lowerTranscript.includes('issue') || lowerTranscript.includes('problem') ||
+               lowerTranscript.includes('bug') || lowerTranscript.includes('error')) {
+      detectedType = 'support';
+    }
+    
+    setQueryType(detectedType);
+    
+    // Generate AI response based on query type
+    const aiResponse = generateAIResponse(transcript, detectedType);
+    setResponse(aiResponse);
+    
+    // Simulate processing time
+    setTimeout(() => {
+      setIsProcessing(false);
+    }, 2000);
+  };
+
+  const generateAIResponse = (transcript, type) => {
+    const responses = {
+      investor: `Thank you for your interest in Xploar.ai! I understand you're interested in investment opportunities. I'll connect you directly with our team for detailed discussions about our growth plans, market potential, and investment terms. Let me route this to our investor relations team.`,
+      stakeholder: `I appreciate your interest in partnering with Xploar.ai! Whether it's educational partnerships, technology collaborations, or business development, I'll ensure our stakeholder relations team reaches out to you with detailed information about our collaboration opportunities.`,
+      support: `I'm here to help! I understand you need support with Xploar.ai. I'll connect you with our technical support team who can provide immediate assistance with any questions or issues you're experiencing.`,
+      general: `Thank you for reaching out! I'm excited to learn more about your interest in Xploar.ai. I'll make sure our team connects with you to discuss how we can help with your learning goals and answer any questions you have.`
+    };
+    
+    return responses[type] || responses.general;
+  };
 
   const startRecording = () => {
     if (recognitionRef.current) {
@@ -58,6 +99,8 @@ const VoiceCallButton = () => {
 
   const resetConversation = () => {
     setTranscript('');
+    setResponse('');
+    setQueryType(null);
     setIsProcessing(false);
   };
 
@@ -108,11 +151,31 @@ const VoiceCallButton = () => {
               <p className="text-gray-600 text-sm">Ask me anything about Xploar.ai, partnerships, or investments</p>
             </div>
 
+            {/* Query Type Indicator */}
+            {queryType && (
+              <div className="mb-4 p-3 bg-gradient-to-r from-electric-aqua/10 to-neon-lilac/10 rounded-xl border border-electric-aqua/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-electric-aqua rounded-full"></div>
+                  <span className="text-sm font-medium text-gray-700 capitalize">
+                    {queryType} Query Detected
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Transcript Display */}
             {transcript && (
               <div className="mb-4 p-4 bg-gray-50 rounded-xl">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Your Question:</h4>
                 <p className="text-gray-900">{transcript}</p>
+              </div>
+            )}
+
+            {/* AI Response Display */}
+            {response && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-electric-aqua/10 to-neon-lilac/10 rounded-xl border border-electric-aqua/20">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Manohar's Response:</h4>
+                <p className="text-gray-900">{response}</p>
               </div>
             )}
 
