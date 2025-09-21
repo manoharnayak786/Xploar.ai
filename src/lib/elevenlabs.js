@@ -41,7 +41,8 @@ export const synthesizeSpeechStreaming = async (text, voiceId = ELEVENLABS_VOICE
   try {
     console.log('Streaming speech with ElevenLabs:', { text, voiceId });
     
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || 'pNInz6obpgDQGcFmaJgB'}/stream`, {
+    // Use the regular endpoint but handle streaming response
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || 'pNInz6obpgDQGcFmaJgB'}`, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
@@ -61,7 +62,13 @@ export const synthesizeSpeechStreaming = async (text, voiceId = ELEVENLABS_VOICE
     });
 
     if (!response.ok) {
-      throw new Error(`ElevenLabs streaming API error: ${response.status}`);
+      throw new Error(`ElevenLabs API error: ${response.status}`);
+    }
+
+    // Check if response supports streaming
+    if (!response.body) {
+      // Fallback to regular blob response
+      return await response.blob();
     }
 
     const reader = response.body.getReader();
@@ -74,8 +81,8 @@ export const synthesizeSpeechStreaming = async (text, voiceId = ELEVENLABS_VOICE
       
       chunks.push(value);
       
-      // Call the onChunk callback with the audio chunk
-      if (onChunk) {
+      // Call the onChunk callback with the audio chunk for real-time playback
+      if (onChunk && value.length > 0) {
         onChunk(value);
       }
     }
@@ -95,15 +102,39 @@ export const synthesizeSpeechStreaming = async (text, voiceId = ELEVENLABS_VOICE
   }
 };
 
+export const testElevenLabsConnection = async () => {
+  try {
+    console.log('Testing ElevenLabs connection...');
+    
+    const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'xi-api-key': ELEVENLABS_API_KEY,
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`ElevenLabs API error: ${response.status} - ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('ElevenLabs connection successful! Available voices:', data.voices?.length || 0);
+    return data;
+  } catch (error) {
+    console.error('ElevenLabs connection test failed:', error);
+    throw error;
+  }
+};
+
 export const getVoices = async () => {
   try {
-    // Mock implementation for development
     console.log('Fetching voices from ElevenLabs');
     
-    // In production, replace with actual API call:
-    /*
     const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+      method: 'GET',
       headers: {
+        'Accept': 'application/json',
         'xi-api-key': ELEVENLABS_API_KEY,
       }
     });
@@ -112,19 +143,21 @@ export const getVoices = async () => {
       throw new Error(`ElevenLabs API error: ${response.status}`);
     }
 
-    return await response.json();
-    */
-    
-    // Mock voices for development
-    return {
-      voices: [
-        { voice_id: 'mock_voice_1', name: 'Manohar Voice Clone' },
-        { voice_id: 'mock_voice_2', name: 'Professional Male' }
-      ]
-    };
+    const data = await response.json();
+    return data.voices || [];
   } catch (error) {
-    console.error('ElevenLabs voices error:', error);
-    throw error;
+    console.error('Error fetching voices:', error);
+    // Return fallback voices
+    return [
+      { voice_id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
+      { voice_id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella' },
+      { voice_id: 'VR6AewLTigWG4xSOukaG', name: 'Arnold' },
+      { voice_id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi' },
+      { voice_id: 'ErXwobaYiN019PkySvjV', name: 'Elli' },
+      { voice_id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Josh' },
+      { voice_id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Rachel' },
+      { voice_id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam' }
+    ];
   }
 };
 

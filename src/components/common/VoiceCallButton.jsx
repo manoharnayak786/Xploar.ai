@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { synthesizeSpeech, synthesizeSpeechStreaming } from '../../lib/elevenlabs';
+import { synthesizeSpeech, synthesizeSpeechStreaming, testElevenLabsConnection } from '../../lib/elevenlabs';
 import { createTask } from '../../lib/clickup';
 import { addVoiceInteractionToSheet } from '../../lib/googleSheets';
 
@@ -38,6 +38,11 @@ const VoiceCallButton = () => {
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
+      recognitionRef.current.onstart = () => {
+        console.log('Speech recognition started');
+        setIsRecording(true);
+      };
+
       recognitionRef.current.onresult = (event) => {
         let finalTranscript = '';
         let interimTranscript = '';
@@ -56,6 +61,7 @@ const VoiceCallButton = () => {
         
         // Only process final results when connected
         if (callState === 'connected' && finalTranscript.trim()) {
+          console.log('Processing final transcript:', finalTranscript);
           handleQueryClassification(finalTranscript);
         }
       };
@@ -64,10 +70,32 @@ const VoiceCallButton = () => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
         setIsProcessing(false);
+        
+        // Handle specific errors
+        if (event.error === 'not-allowed') {
+          console.error('Microphone access denied');
+        } else if (event.error === 'no-speech') {
+          console.log('No speech detected, restarting...');
+          // Restart recognition after a short delay
+          setTimeout(() => {
+            if (callState === 'connected' && !isAISpeaking) {
+              startContinuousListening();
+            }
+          }, 1000);
+        } else if (event.error === 'network') {
+          console.error('Network error in speech recognition');
+        }
       };
 
       recognitionRef.current.onend = () => {
+        console.log('Speech recognition ended');
         setIsRecording(false);
+        // Restart recognition if still in connected state
+        if (callState === 'connected' && !isAISpeaking) {
+          setTimeout(() => {
+            startContinuousListening();
+          }, 100);
+        }
       };
     } else {
       console.warn('Speech recognition not supported in this browser');
@@ -132,23 +160,27 @@ const VoiceCallButton = () => {
       setIsAISpeaking(true);
       setIsPlaying(true);
       
-      // Use ElevenLabs streaming for real-time response
-      const audioBlob = await synthesizeSpeechStreaming(text, null, (chunk) => {
-        // Play audio chunks as they arrive for real-time experience
-        const audioChunk = new Blob([chunk], { type: 'audio/mpeg' });
-        const audioUrl = URL.createObjectURL(audioChunk);
-        
-        // Create temporary audio element for streaming
-        const tempAudio = new Audio(audioUrl);
-        tempAudio.play().catch(console.error);
-      });
+      console.log('Converting to speech:', text);
       
-      // Also play the complete audio for fallback
+      // Use ElevenLabs for high-quality voice synthesis
+      const audioBlob = await synthesizeSpeech(text);
+      
+      // Create audio URL and play
       const audioUrl = URL.createObjectURL(audioBlob);
       
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
-        audioRef.current.play();
+        audioRef.current.play().catch((error) => {
+          console.error('Audio play error:', error);
+          setIsPlaying(false);
+          setIsAISpeaking(false);
+          // Restart listening after error
+          setTimeout(() => {
+            if (callState === 'connected') {
+              startContinuousListening();
+            }
+          }, 500);
+        });
       }
       
     } catch (error) {
@@ -162,6 +194,17 @@ const VoiceCallButton = () => {
         setIsPlaying(false);
         setIsAISpeaking(false);
         // Restart listening after speech ends
+        setTimeout(() => {
+          if (callState === 'connected') {
+            startContinuousListening();
+          }
+        }, 500);
+      };
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event.error);
+        setIsPlaying(false);
+        setIsAISpeaking(false);
+        // Restart listening after error
         setTimeout(() => {
           if (callState === 'connected') {
             startContinuousListening();
@@ -268,8 +311,14 @@ const VoiceCallButton = () => {
 
   const startVoiceActivityDetection = async () => {
     try {
-      // Get microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Get microphone access with better constraints
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       mediaStreamRef.current = stream;
       
       // Create audio context for voice activity detection
@@ -282,9 +331,13 @@ const VoiceCallButton = () => {
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
       
-      analyser.fftSize = 256;
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.8;
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
+      
+      let silenceCounter = 0;
+      const silenceThreshold = 10; // frames of silence before considering speech ended
       
       // Voice activity detection loop
       const detectVoiceActivity = () => {
@@ -292,23 +345,30 @@ const VoiceCallButton = () => {
         
         analyser.getByteFrequencyData(dataArray);
         
-        // Calculate average volume
-        const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+        // Calculate RMS (Root Mean Square) for better voice detection
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i] * dataArray[i];
+        }
+        const rms = Math.sqrt(sum / bufferLength);
         
-        // Voice activity threshold
-        const threshold = 30;
+        // Voice activity threshold (adjusted for RMS)
+        const threshold = 15;
         
-        if (average > threshold && !isUserSpeaking) {
-          setIsUserSpeaking(true);
-          console.log('User started speaking');
-          
-          // Clear any existing timeout
-          if (voiceActivityTimeout) {
-            clearTimeout(voiceActivityTimeout);
+        if (rms > threshold) {
+          silenceCounter = 0;
+          if (!isUserSpeaking) {
+            setIsUserSpeaking(true);
+            console.log('User started speaking, RMS:', rms);
+            
+            // Clear any existing timeout
+            if (voiceActivityTimeout) {
+              clearTimeout(voiceActivityTimeout);
+            }
           }
-        } else if (average <= threshold && isUserSpeaking) {
-          // Set timeout to detect end of speech
-          const timeout = setTimeout(() => {
+        } else {
+          silenceCounter++;
+          if (isUserSpeaking && silenceCounter > silenceThreshold) {
             setIsUserSpeaking(false);
             console.log('User stopped speaking');
             
@@ -316,9 +376,7 @@ const VoiceCallButton = () => {
             if (transcript.trim()) {
               handleQueryClassification(transcript);
             }
-          }, 1000); // 1 second silence threshold
-          
-          setVoiceActivityTimeout(timeout);
+          }
         }
         
         // Continue detection
@@ -328,6 +386,8 @@ const VoiceCallButton = () => {
       detectVoiceActivity();
     } catch (error) {
       console.error('Voice activity detection error:', error);
+      // Fallback: just use speech recognition without VAD
+      console.log('Falling back to speech recognition only');
     }
   };
 
@@ -354,6 +414,18 @@ const VoiceCallButton = () => {
     }
     
     setIsUserSpeaking(false);
+  };
+
+  const testElevenLabs = async () => {
+    try {
+      console.log('Testing ElevenLabs connection...');
+      const result = await testElevenLabsConnection();
+      console.log('ElevenLabs test successful:', result);
+      alert('ElevenLabs connection successful! Check console for details.');
+    } catch (error) {
+      console.error('ElevenLabs test failed:', error);
+      alert('ElevenLabs connection failed: ' + error.message);
+    }
   };
 
   const endCall = () => {
@@ -573,6 +645,12 @@ const VoiceCallButton = () => {
                     className="w-full py-3 px-6 bg-gradient-to-r from-electric-aqua to-neon-lilac text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
                   >
                     Start Call
+                  </button>
+                  <button
+                    onClick={testElevenLabs}
+                    className="w-full py-2 px-4 mt-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition-all duration-300"
+                  >
+                    Test ElevenLabs Connection
                   </button>
                 </div>
               </div>
