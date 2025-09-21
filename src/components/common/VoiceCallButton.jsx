@@ -26,17 +26,29 @@ const VoiceCallButton = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
       recognitionRef.current.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setTranscript(transcript);
+        let finalTranscript = '';
+        let interimTranscript = '';
         
-        // Only process if connected
-        if (callState === 'connected') {
-          handleQueryClassification(transcript);
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        // Update transcript display
+        setTranscript(finalTranscript || interimTranscript);
+        
+        // Only process final results when connected
+        if (callState === 'connected' && finalTranscript.trim()) {
+          handleQueryClassification(finalTranscript);
         }
       };
 
@@ -85,6 +97,13 @@ const VoiceCallButton = () => {
     await convertToSpeech(aiResponse);
     
     setIsProcessing(false);
+    
+    // Restart listening after response (Siri-like behavior)
+    setTimeout(() => {
+      if (callState === 'connected') {
+        startContinuousListening();
+      }
+    }, 1000);
   };
 
   const generateAIResponse = (transcript, type) => {
@@ -100,6 +119,9 @@ const VoiceCallButton = () => {
 
   const convertToSpeech = async (text) => {
     try {
+      // Stop listening while speaking
+      stopContinuousListening();
+      
       // Use ElevenLabs for voice synthesis
       const audioBlob = await synthesizeSpeech(text);
       
@@ -118,7 +140,15 @@ const VoiceCallButton = () => {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.9;
       utterance.pitch = 1.0;
-      utterance.onend = () => setIsPlaying(false);
+      utterance.onend = () => {
+        setIsPlaying(false);
+        // Restart listening after speech ends
+        setTimeout(() => {
+          if (callState === 'connected') {
+            startContinuousListening();
+          }
+        }, 500);
+      };
       speechSynthesis.speak(utterance);
       setIsPlaying(true);
     }
@@ -172,6 +202,11 @@ const VoiceCallButton = () => {
         
         // Play Manohar's greeting
         playManoharGreeting();
+        
+        // Start continuous listening after greeting
+        setTimeout(() => {
+          startContinuousListening();
+        }, 2000);
       }, 3000);
     }, 1000);
   };
@@ -200,7 +235,24 @@ const VoiceCallButton = () => {
     await convertToSpeech(greeting);
   };
 
+  const startContinuousListening = () => {
+    if (recognitionRef.current && callState === 'connected') {
+      setIsRecording(true);
+      recognitionRef.current.start();
+    }
+  };
+
+  const stopContinuousListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   const endCall = () => {
+    // Stop continuous listening
+    stopContinuousListening();
+    
     setCallState('ended');
     setIsConnected(false);
     setIsRinging(false);
@@ -463,33 +515,45 @@ const VoiceCallButton = () => {
               </div>
             )}
 
-            {/* Connected State */}
+            {/* Connected State - Siri-like Conversation */}
             {callState === 'connected' && (
               <div className="space-y-4">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
+                    isRecording ? 'bg-gradient-to-r from-electric-aqua to-neon-lilac animate-pulse' : 'bg-green-500'
+                  }`}>
                     <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
                     </svg>
                   </div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">Connected!</h4>
-                  <p className="text-gray-600 text-sm">You're now talking with Manohar</p>
+                  <p className="text-gray-600 text-sm">
+                    {isRecording ? 'Listening... Just speak naturally' : 'Ready to listen'}
+                  </p>
                 </div>
                 
-                <div className="space-y-2">
-                  <button
-                    onClick={startRecording}
-                    className="w-full py-3 px-6 bg-gradient-to-r from-electric-aqua to-neon-lilac text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
-                  >
-                    Start Speaking
-                  </button>
-                  <button
-                    onClick={endCall}
-                    className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-300"
-                  >
-                    End Call
-                  </button>
-                </div>
+                {/* Live Transcript Display */}
+                {transcript && (
+                  <div className="p-4 bg-gray-50 rounded-xl">
+                    <h5 className="text-sm font-medium text-gray-700 mb-2">You said:</h5>
+                    <p className="text-gray-900">{transcript}</p>
+                  </div>
+                )}
+                
+                {/* AI Response Display */}
+                {response && (
+                  <div className="p-4 bg-gradient-to-r from-electric-aqua/10 to-neon-lilac/10 rounded-xl border border-electric-aqua/20">
+                    <h5 className="text-sm font-medium text-gray-700 mb-2">Manohar:</h5>
+                    <p className="text-gray-900">{response}</p>
+                  </div>
+                )}
+                
+                <button
+                  onClick={endCall}
+                  className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-300"
+                >
+                  End Call
+                </button>
               </div>
             )}
 
@@ -512,7 +576,15 @@ const VoiceCallButton = () => {
             {/* Audio Element */}
             <audio
               ref={audioRef}
-              onEnded={() => setIsPlaying(false)}
+              onEnded={() => {
+                setIsPlaying(false);
+                // Restart listening after ElevenLabs audio ends
+                setTimeout(() => {
+                  if (callState === 'connected') {
+                    startContinuousListening();
+                  }
+                }, 500);
+              }}
               className="hidden"
             />
           </div>
