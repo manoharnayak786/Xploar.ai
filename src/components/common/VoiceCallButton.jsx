@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { synthesizeSpeech } from '../../lib/elevenlabs';
+import { createTask } from '../../lib/clickup';
 
 const VoiceCallButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -134,6 +135,125 @@ const VoiceCallButton = () => {
     setIsPlaying(false);
   };
 
+  const handleRouteQuery = async () => {
+    const routingData = {
+      queryType,
+      transcript,
+      response,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href
+    };
+
+    try {
+      // Route to appropriate channel based on query type
+      switch (queryType) {
+        case 'investor':
+          await routeToInvestorChannel(routingData);
+          break;
+        case 'stakeholder':
+          await routeToStakeholderChannel(routingData);
+          break;
+        case 'support':
+          await routeToSupportChannel(routingData);
+          break;
+        default:
+          await routeToGeneralChannel(routingData);
+      }
+    } catch (error) {
+      console.error('Routing error:', error);
+    }
+  };
+
+  const routeToInvestorChannel = async (data) => {
+    // Route to WhatsApp for investors
+    const whatsappMessage = `🚀 New Investor Query via Xploar.ai Voice Call\n\nQuery: "${data.transcript}"\nResponse: "${data.response}"\nTime: ${data.timestamp}`;
+    const whatsappUrl = `https://wa.me/your_investor_whatsapp_number?text=${encodeURIComponent(whatsappMessage)}`;
+    
+    // Also send to ClickUp
+    await sendToClickUp({
+      ...data,
+      priority: 'high',
+      category: 'investor_relations',
+      assignee: 'investor_team'
+    });
+    
+    // Open WhatsApp
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const routeToStakeholderChannel = async (data) => {
+    // Route to email for stakeholders
+    const emailSubject = `New Stakeholder Query - Xploar.ai Voice Call`;
+    const emailBody = `Query: ${data.transcript}\n\nAI Response: ${data.response}\n\nTimestamp: ${data.timestamp}`;
+    const emailUrl = `mailto:stakeholders@xploar.ai?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    
+    // Also send to ClickUp
+    await sendToClickUp({
+      ...data,
+      priority: 'medium',
+      category: 'stakeholder_relations',
+      assignee: 'business_development'
+    });
+    
+    // Open email client
+    window.open(emailUrl, '_blank');
+  };
+
+  const routeToSupportChannel = async (data) => {
+    // Route to WhatsApp for support
+    const whatsappMessage = `🆘 Support Query via Xploar.ai Voice Call\n\nQuery: "${data.transcript}"\nResponse: "${data.response}"\nTime: ${data.timestamp}`;
+    const whatsappUrl = `https://wa.me/your_support_whatsapp_number?text=${encodeURIComponent(whatsappMessage)}`;
+    
+    // Also send to ClickUp
+    await sendToClickUp({
+      ...data,
+      priority: 'high',
+      category: 'customer_support',
+      assignee: 'support_team'
+    });
+    
+    // Open WhatsApp
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const routeToGeneralChannel = async (data) => {
+    // Route to general email
+    const emailSubject = `New General Query - Xploar.ai Voice Call`;
+    const emailBody = `Query: ${data.transcript}\n\nAI Response: ${data.response}\n\nTimestamp: ${data.timestamp}`;
+    const emailUrl = `mailto:hello@xploar.ai?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    
+    // Also send to ClickUp
+    await sendToClickUp({
+      ...data,
+      priority: 'medium',
+      category: 'general_inquiry',
+      assignee: 'general_team'
+    });
+    
+    // Open email client
+    window.open(emailUrl, '_blank');
+  };
+
+  const sendToClickUp = async (data) => {
+    try {
+      await createTask({
+        name: `Voice Call Query - ${data.queryType}`,
+        description: `Query: ${data.transcript}\n\nAI Response: ${data.response}\n\nTimestamp: ${data.timestamp}`,
+        priority: data.priority,
+        category: data.category,
+        assignee: data.assignee,
+        due_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+        queryType: data.queryType,
+        transcript: data.transcript,
+        response: data.response,
+        timestamp: data.timestamp
+      });
+    } catch (error) {
+      console.error('ClickUp integration error:', error);
+    }
+  };
+
   return (
     <>
       {/* Floating Voice Call Button */}
@@ -226,10 +346,10 @@ const VoiceCallButton = () => {
               ) : (
                 <div className="space-y-2">
                   <button
-                    onClick={() => setIsOpen(false)}
+                    onClick={handleRouteQuery}
                     className="w-full py-3 px-6 bg-gradient-to-r from-electric-aqua to-neon-lilac text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
                   >
-                    Close
+                    Connect with Manohar
                   </button>
                   <button
                     onClick={resetConversation}
