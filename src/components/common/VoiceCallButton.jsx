@@ -249,8 +249,42 @@ const VoiceCallButton = () => {
         response: data.response,
         timestamp: data.timestamp
       });
+      
+      // Log interaction to dashboard
+      logInteractionToDashboard(data);
     } catch (error) {
       console.error('ClickUp integration error:', error);
+    }
+  };
+
+  const logInteractionToDashboard = (data) => {
+    try {
+      const interaction = {
+        queryType: data.queryType,
+        transcript: data.transcript,
+        response: data.response,
+        timestamp: data.timestamp,
+        priority: data.priority,
+        category: data.category,
+        source: 'voice_call_button',
+        status: 'processed'
+      };
+      
+      // Get existing interactions
+      const existingInteractions = JSON.parse(localStorage.getItem('voiceInteractions') || '[]');
+      
+      // Add new interaction
+      const updatedInteractions = [...existingInteractions, {
+        ...interaction,
+        id: Date.now()
+      }];
+      
+      // Save to localStorage
+      localStorage.setItem('voiceInteractions', JSON.stringify(updatedInteractions));
+      
+      console.log('Interaction logged to dashboard:', interaction);
+    } catch (error) {
+      console.error('Dashboard logging error:', error);
     }
   };
 

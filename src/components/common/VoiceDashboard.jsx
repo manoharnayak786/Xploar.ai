@@ -11,7 +11,7 @@ const VoiceDashboard = () => {
   });
 
   useEffect(() => {
-    // Load interaction history from localStorage or API
+    // Load interaction history from localStorage
     const savedInteractions = localStorage.getItem('voiceInteractions');
     if (savedInteractions) {
       const parsed = JSON.parse(savedInteractions);
@@ -65,8 +65,27 @@ const VoiceDashboard = () => {
     return colors[priority] || colors.medium;
   };
 
+  const clearHistory = () => {
+    if (window.confirm('Are you sure you want to clear all interaction history?')) {
+      setInteractions([]);
+      localStorage.removeItem('voiceInteractions');
+      calculateStats([]);
+    }
+  };
+
+  const exportData = () => {
+    const dataStr = JSON.stringify(interactions, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `voice-interactions-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
+    <div className="bg-white rounded-2xl shadow-lg p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Voice Interaction Dashboard</h2>
         <div className="flex items-center gap-2">
@@ -101,7 +120,24 @@ const VoiceDashboard = () => {
 
       {/* Recent Interactions */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Interactions</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Recent Interactions</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={exportData}
+              className="px-3 py-1 bg-green-100 text-green-800 rounded-lg text-sm hover:bg-green-200 transition-colors"
+            >
+              Export
+            </button>
+            <button
+              onClick={clearHistory}
+              className="px-3 py-1 bg-red-100 text-red-800 rounded-lg text-sm hover:bg-red-200 transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+        
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {interactions.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -119,8 +155,8 @@ const VoiceDashboard = () => {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getQueryTypeColor(interaction.queryType)}`}>
                       {interaction.queryType}
                     </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(interaction.priority)}`}>
-                      {interaction.priority}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(interaction.priority || 'medium')}`}>
+                      {interaction.priority || 'medium'}
                     </span>
                   </div>
                   <span className="text-xs text-gray-500">{formatDate(interaction.timestamp)}</span>
@@ -160,7 +196,10 @@ const VoiceDashboard = () => {
           <button className="p-3 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors">
             <div className="text-purple-600 font-medium text-sm">Settings</div>
           </button>
-          <button className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">
+          <button 
+            onClick={clearHistory}
+            className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
+          >
             <div className="text-gray-600 font-medium text-sm">Clear History</div>
           </button>
         </div>
