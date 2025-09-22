@@ -23,14 +23,24 @@ const VoiceCallButton = () => {
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [voiceActivityTimeout, setVoiceActivityTimeout] = useState(null);
   
+  // Browser compatibility states
+  const [isSpeechSupported, setIsSpeechSupported] = useState(true);
+  const [isHttpsRequired, setIsHttpsRequired] = useState(false);
+  
   const recognitionRef = useRef(null);
   const audioRef = useRef(null);
   const mediaStreamRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
 
-  // Initialize speech recognition
+  // Check HTTPS requirement and browser support
   useEffect(() => {
+    // Check if running on HTTPS (required for speech recognition in production)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      console.warn('Speech recognition requires HTTPS in production');
+      setIsHttpsRequired(true);
+    }
+    
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
@@ -99,7 +109,24 @@ const VoiceCallButton = () => {
       };
     } else {
       console.warn('Speech recognition not supported in this browser');
+      setIsSpeechSupported(false);
     }
+
+    // Cleanup function
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (voiceActivityTimeout) {
+        clearTimeout(voiceActivityTimeout);
+      }
+    };
   }, []);
 
   const handleQueryClassification = async (transcript) => {
@@ -635,8 +662,54 @@ const VoiceCallButton = () => {
               <p className="text-gray-600 text-sm">Real-time voice conversation with the founder</p>
             </div>
 
+            {/* Browser Compatibility Warnings */}
+            {!isSpeechSupported && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-red-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Browser Not Supported</h4>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Speech recognition is not supported in this browser. Please use Chrome, Safari, or Edge for the best experience.
+                  </p>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="w-full py-2 px-4 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl transition-all duration-300"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* HTTPS Warning */}
+            {isHttpsRequired && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-yellow-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">HTTPS Required</h4>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Speech recognition requires HTTPS in production. The feature may not work properly on HTTP.
+                  </p>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="w-full py-2 px-4 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl transition-all duration-300"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Call Flow States */}
-            {callState === 'idle' && (
+            {callState === 'idle' && isSpeechSupported && !isHttpsRequired && (
               <div className="space-y-4">
                 <div className="text-center">
                   <p className="text-gray-600 mb-4">Click to start a real-time voice call with Manohar</p>

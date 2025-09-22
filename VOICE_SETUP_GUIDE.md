@@ -19,11 +19,17 @@ This guide will help you set up the interactive voice call button with ElevenLab
    - Upload to ElevenLabs voice cloning
    - Get your voice ID
 3. Get your API key from the dashboard
-4. Add to your `.env` file:
+4. Copy `.env.example` to `.env` and update with your credentials:
+```bash
+cp .env.example .env
+```
+5. Update your `.env` file with your actual credentials:
 ```env
 REACT_APP_ELEVENLABS_API_KEY=your_api_key_here
 REACT_APP_ELEVENLABS_VOICE_ID=your_voice_id_here
 ```
+
+**Note**: The system now uses Manohar's custom voice ID (`ElFZbymR0cz1HI2ZbttJ`) by default.
 
 ### 2. ClickUp Setup
 1. Create a ClickUp account
@@ -108,12 +114,32 @@ The voice call button uses Tailwind CSS classes. Modify the styling in `VoiceCal
 3. Verify ElevenLabs integration
 4. Test routing to WhatsApp/email/ClickUp
 
+## Browser Compatibility
+
+### Supported Browsers
+- **Chrome**: Full support (recommended)
+- **Safari**: Full support (recommended)
+- **Edge**: Full support (recommended)
+- **Firefox**: Limited support (may not work properly)
+
+### Browser Requirements
+- **HTTPS Required**: Speech recognition requires HTTPS in production
+- **Microphone Access**: Users must grant microphone permissions
+- **Modern Browser**: Requires Web Speech API support
+
+### Browser Compatibility Features
+- **Automatic Detection**: The system automatically detects browser compatibility
+- **User Feedback**: Clear error messages for unsupported browsers
+- **HTTPS Warning**: Alerts users when HTTPS is required
+- **Graceful Degradation**: Fallback to text-based interaction if needed
+
 ## Troubleshooting
 
 ### Voice Recognition Issues
 - Ensure HTTPS in production (required for speech recognition)
 - Check browser permissions for microphone access
 - Test in different browsers
+- Check browser compatibility warnings in the UI
 
 ### ElevenLabs Issues
 - Verify API key and voice ID

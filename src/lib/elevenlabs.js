@@ -1,13 +1,13 @@
 // ElevenLabs API integration for voice synthesis
 const ELEVENLABS_API_KEY = process.env.REACT_APP_ELEVENLABS_API_KEY || 'fdc72575644bae081da7963040d15648b628b3d8eb8115fa15b677d02a7fc8a9';
-const ELEVENLABS_VOICE_ID = process.env.REACT_APP_ELEVENLABS_VOICE_ID; // Your personal voice ID
+const ELEVENLABS_VOICE_ID = process.env.REACT_APP_ELEVENLABS_VOICE_ID || 'ElFZbymR0cz1HI2ZbttJ'; // Manohar's custom voice ID
 
 export const synthesizeSpeech = async (text, voiceId = ELEVENLABS_VOICE_ID) => {
   try {
     console.log('Synthesizing speech with ElevenLabs:', { text, voiceId });
     
     // Use actual ElevenLabs API
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || 'pNInz6obpgDQGcFmaJgB'}`, {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
@@ -42,7 +42,7 @@ export const synthesizeSpeechStreaming = async (text, voiceId = ELEVENLABS_VOICE
     console.log('Streaming speech with ElevenLabs:', { text, voiceId });
     
     // Use the regular endpoint but handle streaming response
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId || 'pNInz6obpgDQGcFmaJgB'}`, {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
